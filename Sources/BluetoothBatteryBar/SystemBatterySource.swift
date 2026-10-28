@@ -14,8 +14,10 @@ enum SystemBatterySource {
         while case let service = IOIteratorNext(iterator), service != 0 {
             defer { IOObjectRelease(service) }
             guard let percent = property(service, "BatteryPercent") as? Int,
-                  let name = property(service, "Product") as? String else { continue }
-            readings.append(DeviceBattery(name: name, kind: .init(guessingFrom: name), percent: percent, source: .system, updated: Date()))
+                  let name = property(service, "Product") as? String,
+                  !readings.contains(where: { $0.name == name }) else { continue }
+            readings.append(DeviceBattery(id: "system:\(name)", name: name, part: nil, kind: .init(guessingFrom: name),
+                                          percent: percent, isCharging: nil, via: "macOS", updated: Date()))
         }
         return readings
     }
